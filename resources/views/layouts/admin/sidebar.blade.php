@@ -4,7 +4,7 @@
             <a href="#">Teknik Informatika | KSI</a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
-            <a href="#">RPL</a>
+            <a href="#">KSI</a>
         </div>
         <div class="sidebar-menu">
             <ul class="menu-header">
@@ -15,6 +15,13 @@
                 <span>Dashboard</span>
                 </a>
             </li>
+            <li class="{{ Route::is('admin.product') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.product') }}">
+                    <i class="fas fa-box"></i>
+                    <span>Produk</span>
+                </a>
+            </li>
+
             </ul>
         </div>
     </aside>
