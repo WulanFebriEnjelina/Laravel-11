@@ -1,4 +1,5 @@
 @extends('layouts.admin.main')
+
 @section('title', 'Admin Product')
 
 @section('content')
@@ -14,43 +15,46 @@
             </div>
         </div>
 
-        <a href="#" class="btn btn-icon icon-left btn-primary">
+        <!-- Tombol untuk menambah produk -->
+        <a href="{{ route('product.create') }}" class="btn btn-icon icon-left btn-primary">
             <i class="fas fa-plus"></i> Produk
         </a>
 
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-md">
-                    <tr>
-                        <th>#</th>
-                        <th>Nama Produk</th>
-                        <th>Harga Produk</th>
-                        <th>Stok</th>
-                        <th>Action</th>
-                    </tr>
-                    @php
-                        $no = 1;
-                    @endphp
-                    @forelse ($products as $item)
-                    <tr>
-                        <td>{{ $no++ }}</td>
-                        <td>{{ $item->name }}</td>
-                        <td>{{ $item->price }} Points</td>
-                        <td>{{ $item->stock }}</td>
-                        <td>
-                            <a href="#" class="badge badge-info">Detail</a>
-                            <a href="#" class="badge badge-warning">Edit</a>
-                            <a href="#" class="badge badge-danger">Hapus</a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center">Data Produk Kosong</td>
-                    </tr>
-                    @endforelse
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nama Produk</th>
+                            <th>Harga Produk</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $no = 1;
+                        @endphp
+
+                        @forelse ($products as $item)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $item->name }}</td>
+                            <td>{{ $item->price }} Points</td>
+                            <td>
+                                <td>
+                                    <a href="{{ route('product.detail', $item->id) }}" class="badge badge-info">Detail</a>
+                                    <a href="{{ route('product.edit', $item->id) }}" class="badge badge-warning">Edit</a>
+                                    <a href="{{ route('product.delete', $item->id) }}" class="badge badge-danger" data-confirm-delete="true">Hapus</a>
+                                </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center">Data Produk Kosong</td>
+                        @endforelse
                 </table>
             </div>
         </div>
-    </section>
+    </div>
 </div>
 @endsection

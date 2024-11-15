@@ -1,12 +1,14 @@
 @extends('layouts.user.main')
+
 @section('content')
-<!-- start banner Area -->
+
+<!-- Start Banner Area -->
 <section class="banner-area">
     <div class="container">
         <div class="row fullscreen align-items-center justify-content-start">
             <div class="col-lg-12">
                 <div class="">
-                    <!-- single-slide -->
+                    <!-- Single Slide -->
                     <div class="row">
                         <div class="col-lg-5 col-md-6">
                             <div class="banner-content">
@@ -25,9 +27,9 @@
         </div>
     </div>
 </section>
-<!-- End banner Area -->
+<!-- End Banner Area -->
 
-<!-- start product Area -->
+<!-- Start Product Area -->
 <section class="section_gap">
     <div class="container">
         <div class="row justify-content-center">
@@ -39,38 +41,68 @@
             </div>
         </div>
         <div class="row">
-            <!-- single product -->
+            <!-- Loop through products -->
             @forelse ($products as $item)
-                <div class="col-lg-3 col-md-6">
-                    <div class="single-product">
-                        <img class="img-fluid" src="{{ asset('images/' . $item->images) }}" alt="">
-                        <div class="product-details">
-                            <h6>{{ $item->name }}</h6>
-                            <div class="price">
-                                <h6>{{ $item->price }} Points</h6>
-                            </div>
-                            <div class="prd-bottom">
-                                <a href="#" class="social-info">
+            <div class="col-lg-3 col-md-6">
+                <div class="single-product">
+                    <img class="img-fluid" src="{{ asset('images/' . $item->image) }}" alt="">
+                    <div class="product-details">
+                        <h6>{{ $item->name }}</h6>
+                        <div class="price">
+                            <h6>Harga: {{ $item->price }} Points</h6>
+                        </div>
+                        <div class="prd-bottom">
+                            <!-- Ensure user is logged in before showing purchase option -->
+                            @auth
+                                <a class="social-info" href="javascript:void(0);" onclick="confirmPurchase('{{ $item->id }}', '{{ Auth::user()->id }}')">
                                     <span class="ti-bag"></span>
                                     <p class="hover-text">Beli</p>
                                 </a>
-                                <a href="#" class="social-info">
-                                    <span class="lnr lnr-move"></span>
-                                    <p class="hover-text">Detail</p>
+                            @else
+                                <a class="social-info" href="{{ route('login') }}">
+                                    <span class="ti-bag"></span>
+                                    <p class="hover-text">Login untuk Beli</p>
                                 </a>
-                            </div>
+                            @endauth
+                            <a href="{{ route('user.detail.product', $item->id) }}" class="social-info">
+                                <span class="lnr lnr-move"></span>
+                                <p class="hover-text">Detail</p>
+                            </a>
                         </div>
                     </div>
                 </div>
+            </div>
             @empty
-                <div class="col-lg-12 col-md-12">
-                    <div class="single-product">
-                        <h3 class="text-center">Tidak ada produk</h3>
-                    </div>
+            <div class="col-lg-12 col-md-12">
+                <div class="single-product">
+                    <h3 class="text-center">Tidak ada produk</h3>
                 </div>
+            </div>
             @endforelse
         </div>
     </div>
 </section>
-<!-- end product Area -->
+<!-- End Product Area -->
+
+<!-- SweetAlert Script -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmPurchase(productId, userId) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Anda akan membeli produk ini!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Beli!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/product/purchase/' + productId + '/' + userId;
+            }
+        });
+    }
+</script>
+
 @endsection
