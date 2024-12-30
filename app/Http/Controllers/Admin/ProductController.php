@@ -3,88 +3,106 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Distributor;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class ProductController extends Controller
 {
-    // Fungsi untuk menampilkan daftar produk
     public function index()
     {
-        $products = Product::all();
-        return view('pages.admin.product.index', compact('products'));
+        $data = DB::table('distributors')
+        ->join('products', 'distributors.id', '=', 'products.id_distributor')
+        ->select('distributors.*', 'products.*')
+        ->get();
+
+        confirmDelete('Hapus Data!', 'Apakah anda yakin ingin menghapus data ini?');
+
+        return view('pages.admin.product.index', compact('data'));
     }
 
-    // Fungsi untuk menampilkan form tambah produk
     public function create()
     {
-        return view('pages.admin.product.create');
+        $distributor = Distributor::all();
+
+        return view('pages.admin.product.create', compact('distributor'));
     }
 
-    // Fungsi untuk menyimpan data produk baru
     public function store(Request $request)
     {
-        // Validasi data input dari user
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'category' => 'required|string|max:255',
-            'description' => 'required|string',
-            'image' => 'required|mimes:png,jpeg,jpg|max:2048', // Validasi gambar
+            'id_distributor' => 'required|numeric',
+            'name' => 'required',
+            'price' => 'numeric|required',
+            'category' => 'required',
+            'description' => 'required',
+            'image' => 'required|image|mimes:PNG,png,jpeg,jpg',
+            'discount' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        // Jika validasi gagal, kembali ke form dengan pesan error
         if ($validator->fails()) {
             Alert::error('Gagal!', 'Pastikan semua terisi dengan benar!');
-            return redirect()->back()->withErrors($validator)->withInput();
+            return redirect()->back();
         }
 
-        // Menangani penyimpanan gambar
-        $imageName = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $imageName); // Menyimpan gambar ke folder images
+            $image->move('images/', $imageName);
         }
 
-        // Menyimpan produk ke database
         $product = Product::create([
+            'id_distributor' => $request->id_distributor,
             'name' => $request->name,
             'price' => $request->price,
             'category' => $request->category,
             'description' => $request->description,
-            'image' => $imageName, // Menyimpan nama gambar
+            'image' => $imageName,
+            'discount' => $request->discount ?? 0,
         ]);
 
-        // Jika produk berhasil disimpan, tampilkan pesan sukses dan redirect ke halaman produk
         if ($product) {
             Alert::success('Berhasil!', 'Produk berhasil ditambahkan!');
-            return redirect()->route('admin.product.index'); // Sesuaikan dengan route yang sesuai
+            return redirect()->route('admin.product');
         } else {
-            Alert::error('Gagal!', 'Produk gagal ditambahkan!');
+            Alert::error('Gagal', 'Produk gagal ditambahkan');
             return redirect()->back();
         }
     }
 
-    // Fungsi untuk menampilkan form edit produk
+    public function detail($id)
+    {
+        $data = DB::table('distributors')
+        ->join('products', 'distributors.id', '=', 'products.id_distributor')
+        ->select('products.*', 'distributors.*')
+        ->where('products.id', '=', $id)
+        ->first();
+
+        return view('pages.admin.product.detail', compact('data'));
+    }
+
     public function edit($id)
     {
         $product = Product::findOrFail($id);
-        return view('pages.admin.product.edit', compact('product'));
+        $distributor = Distributor::all();
+
+        return view('pages.admin.product.edit', compact('product', 'distributor'));
     }
 
-    // Fungsi untuk memperbarui data produk
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
+            'id_distributor' => 'required|numeric',
             'name' => 'required',
             'price' => 'numeric|required',
             'category' => 'required',
             'description' => 'required',
             'image' => 'nullable|mimes:png,jpeg,jpg',
+            'discount' => 'nullable|numeric|min:0|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -95,7 +113,6 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
             $oldPath = public_path('images/' . $product->image);
             if (File::exists($oldPath)) {
                 File::delete($oldPath);
@@ -103,17 +120,19 @@ class ProductController extends Controller
 
             $image = $request->file('image');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $imageName);
+            $image->move('images/', $imageName);
         } else {
             $imageName = $product->image;
         }
 
         $product->update([
+            'id_distributor' => $request->id_distributor,
             'name' => $request->name,
             'price' => $request->price,
             'category' => $request->category,
             'description' => $request->description,
             'image' => $imageName,
+            'discount' => $request->discount ?? 0,
         ]);
 
         if ($product) {
@@ -125,25 +144,14 @@ class ProductController extends Controller
         }
     }
 
-    // Fungsi untuk menampilkan detail produk
-    public function detail($id)
-    {
-        $product = Product::findOrFail($id);
-        return view('pages.admin.product.detail', compact('product'));
-    }
-
-    // Fungsi untuk menghapus data produk
     public function delete($id)
     {
+
         $product = Product::findOrFail($id);
-        $oldPath = public_path('images/' . $product->image);
+        $product->delete();
 
-        if (File::exists($oldPath)) {
-            File::delete($oldPath);
-        }
-
-        if ($product->delete()) {
-            Alert::success('Berhasil!', 'Produk berhasil dihapus!');
+        if ($product) {
+            Alert::success('Berhasil', 'Produk berhasil dihapus!');
             return redirect()->back();
         } else {
             Alert::error('Gagal!', 'Produk gagal dihapus!');

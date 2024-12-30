@@ -5,48 +5,43 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use RealRashid\SweetAlert\Facades\Alert;
-use App\Models\Admin;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'email' => 'required|email:dns',
             'password' => 'required|min:8|max:15',
         ]);
 
+        // Cek apakah validasi gagal
         if ($validator->fails()) {
             Alert::error('Error', 'Pastikan semua email dan password terisi dengan benar!');
-            return redirect()->back();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Coba login sebagai admin
         if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
             toast('Selamat datang admin!', 'success');
             return redirect()->route('admin.dashboard');
-        } elseif (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        }
+
+        // Coba login sebagai user
+        elseif (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             toast('Selamat datang!', 'success');
             return redirect()->route('user.dashboard');
-        } else {
-            Alert::error('Login Gagal!', 'Email atau password tidak valid!');
-            return redirect()->back();
         }
-    }
 
-    public function admin_logout() {
-        Auth::guard('admin')->logout();
-        toast('Berhasil logout!', 'success');
-        return redirect('/');
-    }
-
-    public function user_logout() {
-        Auth::logout();
-        toast('Berhasil logout!', 'success');
-        return redirect('/');
+        // Jika login gagal
+        else {
+            Alert::error('Login Gagal!', 'Email atau password tidak valid!');
+            return redirect()->back()->withInput();
+        }
     }
 
     public function register()
@@ -56,24 +51,28 @@ class AuthController extends Controller
 
     public function post_register(Request $request)
     {
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email:dns',
             'password' => 'required|min:8|max:15',
         ]);
 
+        // Cek apakah validasi gagal
         if ($validator->fails()) {
             Alert::error('Gagal!', 'Pastikan semua terisi dengan benar!');
-            return redirect()->back()->withErrors($validator)->withInput();
+            return redirect()->back();
         }
 
+        // Membuat user baru
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => bcrypt($request->password),
             'point' => 10000,
         ]);
 
+        // Cek apakah user berhasil dibuat
         if ($user) {
             Alert::success('Berhasil!', 'Akun baru berhasil dibuat, silahkan melakukan login!');
             return redirect('/');
@@ -81,5 +80,19 @@ class AuthController extends Controller
             Alert::error('Gagal!', 'Akun gagal dibuat, silahkan coba lagi!');
             return redirect()->back();
         }
+    }
+
+    public function admin_logout()
+    {
+        Auth::guard('admin')->logout();
+        toast('Berhasil logout!', 'success');
+        return redirect('/');
+    }
+
+    public function user_logout()
+    {
+        Auth::logout();
+        toast('Berhasil logout!', 'success');
+        return redirect('/');
     }
 }

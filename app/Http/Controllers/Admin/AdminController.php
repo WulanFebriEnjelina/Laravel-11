@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Distributor;
 
 class AdminController extends Controller
 {
@@ -13,7 +14,8 @@ class AdminController extends Controller
     {
         $products = Product::count();
         $users = User::count();
+        $distributors = Distributor::count();
 
-        return view('pages.admin.index', compact('products', 'users'));
+        return view('pages.admin.index', compact('products', 'users', 'distributors'));
     }
 }

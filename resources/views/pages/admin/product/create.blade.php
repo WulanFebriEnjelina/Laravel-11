@@ -1,6 +1,5 @@
 @extends('layouts.admin.main')
-@section('title', 'Admin Tambah Produk')
-
+@section('title', 'Admin Tambah Product')
 @section('content')
 <div class="main-content">
     <section class="section">
@@ -17,44 +16,70 @@
             </div>
         </div>
 
-        <a href="{{ route('admin.product') }}" class="btn btn-icon icon-left btn-warning"> Kembali</a>
+        <a href="{{ route('admin.product') }}" class="btn btn-icon icon-left btn-warning">Kembali</a>
 
         <div class="card mt-4">
-            <form action="{{ route('admin.product.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('product.store') }}" class="needs-validation" novalidate="" enctype="multipart/form-data" method="POST">
                 @csrf
-                <div>
-                    <label for="name">Nama Produk</label>
-                    <input type="text" id="name" name="name" value="{{ old('name') }}" required>
-                    @error('name') <span>{{ $message }}</span> @enderror
-                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="id_distributor">Nama Distributor</label>
+                                <select name="id_distributor" class="form-control">
+                                    @foreach ($distributor as $item)
+                                        <option value="{{ $item->id }}">{{ $item->nama_distributor }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="name">Nama Produk</label>
+                                <input id="name" type="text" class="form-control" name="name" required>
+                                <div class="invalid-feedback">Kolom ini harus di isi!</div>
+                            </div>
+                        </div>
 
-                <div>
-                    <label for="price">Harga</label>
-                    <input type="number" id="price" name="price" value="{{ old('price') }}" required>
-                    @error('price') <span>{{ $message }}</span> @enderror
-                </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="price">Harga Produk (Point)</label>
+                                <input id="price" type="number" class="form-control" name="price" required>
+                                <div class="invalid-feedback">Kolom ini harus di isi!</div>
+                            </div>
+                        </div>
 
-                <div>
-                    <label for="category">Kategori</label>
-                    <input type="text" id="category" name="category" value="{{ old('category') }}" required>
-                    @error('category') <span>{{ $message }}</span> @enderror
-                </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="category">Kategori Produk</label>
+                                <input id="category" type="text" class="form-control" name="category" required>
+                                <div class="invalid-feedback">Kolom ini harus di isi!</div>
+                            </div>
+                        </div>
 
-                <div>
-                    <label for="description">Deskripsi</label>
-                    <textarea id="description" name="description" required>{{ old('description') }}</textarea>
-                    @error('description') <span>{{ $message }}</span> @enderror
-                </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="description">Deskripsi Produk</label>
+                                <textarea class="form-control" name="description" id="description" cols="30" rows="4" required></textarea>
+                                <div class="invalid-feedback">Isi berita harus di isi!</div>
+                            </div>
+                        </div>
 
-                <div>
-                    <label for="image">Gambar Produk</label>
-                    <input type="file" id="image" name="image" accept="image/*" required>
-                    @error('image') <span>{{ $message }}</span> @enderror
+                        <div class="col-12">
+                            <div class="form-group">
+                                <div class="custom-file">
+                                    <input class="custom-file-input" name="image" id="customFile" type="file" required>
+                                    <label class="custom-file-label" for="customFile">Pilih Gambar</label>
+                                    <div class="invalid-feedback">Kolom ini harus di isi!</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-icon icon-left btn-primary">
+                        <i class="fas fa-plus"></i> Tambah
+                    </button>
                 </div>
-
-                <button type="submit">Simpan Produk</button>
             </form>
-
         </div>
     </section>
 </div>

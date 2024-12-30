@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
@@ -6,46 +7,40 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\User;
 use RealRashid\SweetAlert\Facades\Alert;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     public function index()
     {
         $products = Product::all();
+
         return view('pages.user.index', compact('products'));
     }
 
     public function detail_product($id)
     {
-        $product = Product::findOrFail($id);
-        return view('pages.user.detail', compact('product'));
+        $products = Product::findOrFail($id);
+
+        return view('pages.user.detail', compact('products'));
     }
 
-    public function purchase($productId)
+    public function purchase($productId, $userId)
     {
-        // Pastikan pengguna login
-        $user = Auth::user(); // Menggunakan Auth untuk mendapatkan user yang login
+        $products = Product::findOrFail($productId);
+        $user = User::findOrFail($userId);
 
-        // Menemukan produk berdasarkan ID
-        $product = Product::findOrFail($productId);
+        if ($user->point > $products->price) {
+            $totalPoints = $user->point - $products->price;
 
-        // Mengecek apakah pengguna memiliki cukup point untuk membeli produk
-        if ($user->point >= $product->price) {
-            // Tidak melakukan update pada poin, hanya memberi notifikasi sukses
+            $user->update([
+                'point' => $totalPoints,
+            ]);
+
             Alert::success('Berhasil!', 'Produk berhasil dibeli!');
-            return redirect()->route('user.dashboard');
+            return redirect()->back();
         } else {
-            // Menampilkan notifikasi gagal jika point tidak cukup
-            Alert::error('Gagal!', 'Point Anda tidak cukup!');
-            return redirect()->route('user.dashboard');
+            Alert::error('Gagal!', 'point anda tidak cukup!');
+            return redirect()->back();
         }
-
     }
-    public function user_logout()
-{
-    Auth::logout();
-    return redirect()->route('user.dashboard'); // Redirect to the user dashboard
-}
-
 }

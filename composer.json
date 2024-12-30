@@ -6,8 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.0",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^3.1",
         "realrashid/sweet-alert": "^7.2"
     },
     "require-dev": {
@@ -64,6 +66,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "php": "8.2.12"
         }
     },
     "minimum-stability": "stable",

@@ -12,12 +12,11 @@ class AdminMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Cek apakah admin sudah login
         if (!Auth::guard('admin')->check()) {
             return redirect('/');
         }
